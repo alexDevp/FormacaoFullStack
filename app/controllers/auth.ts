@@ -1,13 +1,12 @@
 import {Request, Response, NextFunction} from 'express';
-import User from "../models/User";
+import User from "../models/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"
 import secret from "../config/secret";
 
 const signup = async (req: Request, res: Response, next:NextFunction) => {
     if( !req.body.name || !req.body.email || !req.body.password){
-        res.status(400).send({message: "Content cannot be empty"});
-        return;
+        return res.status(400).send({message: "Content cannot be empty"});
     }
 
     const newUser = new User({
@@ -23,37 +22,25 @@ const signup = async (req: Request, res: Response, next:NextFunction) => {
 }
 
 const login = async (req: Request, res: Response, next:NextFunction) => {
-    if(!req.body.email){
-        res.status(400).send({message: "Email cannot be empty"});
-        return;
-    }
-    if(!req.body.password){
-        res.status(400).send({message: "Password cannot be empty"});
-        return;
+    
+    if(!req.body.email || !req.body.password){
+        return res.status(400).send({message: "Email and Password cannot be empty"});
     }
 
     const user = await User.findOne({ where: {email: req.body.email}});
-     
+
     if(!user){
-        res.status(204).send({message: "User Not Registered"});
-        return;
+        return res.status(204).send({message: "User Not Registered"});
     }
     
-    console.log(user);
      bcrypt.compare(req.body.password, user.password).then((match) => {
          if (!match) {
-           res
+          return res
              .status(400)
-             .json({ error: "Wrong Username and Password Combination!" });
-         } else {
+             .json({ error: "Wrong Email and Password Combination!" });
+         } 
            const accessToken = jwt.sign({email: user.email, name: user.name, id: user._id}, secret);
-    
-           res.cookie("access-token", accessToken, {
-             maxAge: 60 * 60 * 24 * 30 * 1000,
-             httpOnly: true,
-           });
-           res.status(200).send({message: "Logged In"});
-        }
+           res.status(200).send({message: "Logged In", token: accessToken});
        });
 }
 
