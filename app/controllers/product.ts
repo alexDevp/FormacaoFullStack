@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import Product from "../models/product";
 
 const readProduct = async (req: Request, res: Response, next: NextFunction) => {
-  const productId = req.params.authorId;
+  const productId = req.params.productId;
 
   return Product.findById(productId)
     .then((product) =>
@@ -49,7 +49,7 @@ const updateProduct = async (
   res: Response,
   next: NextFunction
 ) => {
-  const productId = req.params.authorId;
+  const productId = req.params.productId;
 
   return Product.findById(productId)
     .then((product) => {
@@ -72,7 +72,7 @@ const deleteProduct = async (
   res: Response,
   next: NextFunction
 ) => {
-  const productId = req.params.authorId;
+  const productId = req.params.productId;
 
   return Product.findById(productId)
     .then((product) => {
