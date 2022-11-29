@@ -1,9 +1,9 @@
 import http from "http";
 import express, { Express } from "express";
+import cors from "cors";
 import morgan from "morgan";
-import { router as PostRouter } from "./routes/posts";
+import { router as TaskRouter } from "./routes/tasks";
 import { router as AuthRouter } from "./routes/auth";
-import { router as ProductRouter } from "./routes/products";
 
 import swaggerUI from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
@@ -25,6 +25,18 @@ router.use(express.urlencoded({ extended: false }));
 
 router.use(express.json());
 
+var allowlist = ["http://localhost:3000"];
+var corsOptionsDelegate = function (req: any, callback: any) {
+  var corsOptions;
+  if (allowlist.indexOf(req.header("Origin")) !== -1) {
+    corsOptions = { origin: true }; // reflect (enable) the requested origin in the CORS response
+  } else {
+    corsOptions = { origin: false }; // disable CORS for this request
+  }
+  callback(null, corsOptions); // callback expects two parameters: error and options
+};
+
+router.use(cors(corsOptionsDelegate));
 const options = {
   definition: {
     openapi: "3.0.0",
@@ -56,12 +68,12 @@ router.use(
   swaggerUI.serve,
   swaggerUI.setup(swaggerJSDoc(options))
 );
-router.use("/", PostRouter);
+
+router.use("/", TaskRouter);
 router.use("/", AuthRouter);
-router.use("/", ProductRouter);
 
 router.listen(8080, () => {
-  console.log("Servidor started");
+  console.log("Server started");
 });
 
 export default router;
